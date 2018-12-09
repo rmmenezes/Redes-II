@@ -1,0 +1,57 @@
+6–   DHCP
+
+1.Configurar as placas de rede 
+	nano /etc / network/interfaces
+
+		#REDE WAN
+	auto eth0
+	iface eth0 inet dhcp
+
+		#REDE LAN
+	auto eth1
+	iface eth1 inet static
+	address 172.16.0.1
+	netmask 255.255.0.0
+	
+/etc/init.d/networking restart
+
+2- instalar e configurar o dhcp
+
+	apt-get -y install dhcp3-server
+	cd /etc/dhcp/
+	/etc/dhcp# nano dhcpd.conf
+
+		ddns-update-style none;
+		default-lease-time 600;
+		mas-lease-time 7200;
+		authoritative;
+
+		subnet 172.16.0.0 netmask 255.255.0.0{
+			range 172.16.0.1 172.16.0.10;
+			option routers 172.16.0.1;
+			option domain-name-servers 200.235.120.200,200.235.120.200,8.8.8.8.,8.8.4.4
+			option broadcast-address 172.16.0.255;
+		}
+		
+	nano /etc/default/isc-dhcp-server
+		INTERFACES="eth1"
+
+	service isc-dhcp-server restart
+
+3- tentando no win
+
+
+4- aplicar as regras de roteamento entre as redes
+
+	nano /etc/rc.local
+
+		#Redireciona pacotes
+		echo 1 > /proc/sys/net/ipv4/ip_forward
+
+		#Mascara pacotes (NAT)
+		iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE
+
+	init 6
+
+	5- Testando conexao
+	 
